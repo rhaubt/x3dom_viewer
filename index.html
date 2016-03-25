@@ -1,0 +1,719 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>Rock Art Database 2D Workbench</title>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="stylesheet" type="text/css" href="libs/x3dom.css" />
+    <script type="text/javascript" src="libs/x3dom.js"></script>
+    
+	<link rel="stylesheet" href="libs/jquery.mobile-1.1.1.min.css" />
+	<script src="libs/jquery-1.7.1.min.js"></script>
+	<script src="libs/jquery.mobile-1.1.1.min.js"></script>
+	
+	<link rel="stylesheet" href="style.css" />
+	<script src="main.js"></script>
+
+<!-- Javascript to fetch title= desc= x3d= from URL --> 	
+	<script>
+	// fetch data value from URL
+		function getUrlVars() {
+    		var vars = {};
+    		var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        		vars[key] = value;
+    		});
+    	return vars;
+		}
+	</script>
+
+<!-- Take Screenshot-->
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function(){
+		var screenshotCount = 0;
+
+		//Every time the user clicks on the 'take screenhot' button
+		$("#btnTakeScreenshot").on("click", function() {
+			//Get data url from the runtime
+			var imgUrl = document.getElementById("x3dElement").runtime.getScreenshot();
+
+			//Create preview image...
+			var newScreenshotImage = document.createElement('img');
+			newScreenshotImage.src = imgUrl;
+			newScreenshotImage.id = "screenshot_" + screenshotCount;
+			$('#screenshotPreviews').append(newScreenshotImage);
+
+			//...and download link
+			var newScreenshotDownloadLink = document.createElement('a');
+			newScreenshotDownloadLink.href = imgUrl;
+			newScreenshotDownloadLink.download = "screenshot_" + screenshotCount + ".png";
+			newScreenshotDownloadLink.innerHTML = "save as ...";
+			$('#screenshotPreviews').append(newScreenshotDownloadLink);
+
+			screenshotCount++;
+			$('#screenshotCount').html(screenshotCount);
+		});
+	});
+</script>
+<style>
+/* DIV collapse for toolbox */
+.collapse{
+  font-size: 14px;
+  display:block;
+}
+.collapse + input{
+  display:none;
+}
+.collapse + input + *{
+  display:none;
+}
+.collapse+ input:checked + *{
+  display:block;
+}
+</style>
+<!-- Ruler CSS - Copyright (c) 2011, Yonathan Randolph. This is released under BSD. -->
+<style>
+html, body {margin:0}
+#canvas {
+  position:fixed;
+  top:-19px;
+  right:0px;
+  bottom:0;
+  left:-19px;
+  width:100%;
+  height:10%;
+}
+#non-ruler {margin: 1em; position:fixed; width: 100%; bottom: 0; left: 0}
+/* copied from stackoverflow: */
+kbd{
+  padding:2px 4px;
+  white-space:nowrap;
+  color:#000;
+  background:#eee;
+  border-width:1px 3px 3px 1px;
+  border-style:solid;
+  border-color:#ccc #aaa #888 #bbb;
+}
+</style>
+
+<!-- Main Screen CSS -->
+ <style type="text/css">
+/* Screenshot Box */
+    #demo_table {
+		border:0;
+	}
+ 	#demo_table img {
+		width:100px;
+		height:100px;
+	}
+	#demo_table td img
+	{
+		border:1px solid grey;
+		text-decoration:none;
+	}
+
+	 #screenshotPreviews > img {
+		 height:50px;
+		 width:80px;
+		 margin-left:2px;
+	 }
+/* Left Pane */
+	#leftpane {
+		background-color: #282828;
+		width: 105px;
+		padding-left: 5px;
+		float:left;
+	}
+	.ui-btn-inner {
+		font-size: 10px;
+		padding: 7px 7px 7px 7px;
+		white-space: normal;
+	}
+/* Right Pane */
+	#rightpane {
+		padding: 0px 0px 0px 0px;
+		height: 100vh;
+	}
+/* Annotation Btn*/
+	.ui-btn-up-c {
+    	border: none;
+    	width: 70px;
+    }
+    .ui-btn-hover-c {
+    	border: none;
+    	width: 70px;
+    }
+/* body text links*/
+    .ui-body-c .ui-link {
+    color: #2489CE;
+    font-weight: lighter;
+}
+/* Top Name Bar */
+	.ui-bar-a {
+    border: none;
+    background: none;
+    }
+/* x3d Viewport */
+#x3dViewport {
+    margin-top: 0px;
+    }
+body.ui-mobile-viewport, div.ui-mobile-viewport {
+    overflow-x: hidden;
+    overflow-y: hidden;
+	}
+#mainpage {
+    color: #FFF !important;
+    text-shadow: none !important;
+}
+.ui-btn-up-c {
+  border: none;
+  width: 80px;
+}
+.ui-btn-hover-c {
+  border: none;
+  width: 80px;
+}
+</style>
+
+</head> 
+<body> 
+<div id="mainpage" data-role="page">
+<!-- 2D View-->
+		<div style="position: absolute; right: 70px; bottom: 5px; z-index:99999;">
+			<script type="text/javascript">
+				var getimg = getUrlVars()["img"];
+				document.write(('<a target="_blank" href="'+getimg)+('">2D view</a>'));
+			</script>
+		</div>
+<!-- Full Screen-->
+		<div style="position: absolute; right: 2px; bottom: 5px; z-index:99999;">
+			<script type="text/javascript">
+				var getimg = getUrlVars()["img"];
+					geth = getUrlVars()["h"];
+					getw = getUrlVars()["w"];		
+				document.write(('<a target="_blank" href="http://www.rockartdatabase.com/v2/wp-content/themes/v2/plugin_x3dom_images/index.html?img='+getimg)+('&h='+geth)+('&w='+getw)+('">full screen</a>'));
+			</script>
+		</div>
+<!-- Annotation Btn-->
+		<div style="padding:2px; position: absolute; left: 0px; top:5%; z-index:99999;">
+			<a href="#" title="Click on 3D model to create new annotation" id="btnCreatAnno" 
+		   	data-role="button" data-inline="true">New Marker
+			</a>
+		</div>
+
+<!-- Screenshot Btn-->
+		<div style=" position: absolute; bottom: 0px; left: 5px; z-index:99999;">
+			<a href="#" id="btnTakeScreenshot"><button type="button">Screenshot</button></a>
+		</div>
+<!-- Screenshot Count-->
+		<div style=" position: absolute; bottom: 5px; left: 100px; z-index:99999;">
+			<span style="color: #e0e0e0;" id="screenshotCount">0</span>
+		</div>
+<!-- Screenshot Preview-->
+		<div style="position: absolute; left: 5px; max-height: 70px; overflow-y: scroll; bottom: 35px; z-index:99999; background-color: #e0e0e0; margin: 2px; opacity: 0.8; border: 1px solid #282828;" id="screenshotPreviews">
+		</div>
+<!-- Navigation Info-->
+		<div style="padding:2px; position: absolute; left: 120px; bottom: 3px; z-index:99999;">
+			<small> a = centre | r = reset | double click = focus | ctrl + mouse = drag
+			</small>
+		</div>
+
+	
+	<div id="rightpane">
+		<div id="x3dViewport" data-role="content">	
+			<X3D id='x3dElement' showStat='false' showLog='false'>
+				<Scene id='scene'>
+					<directionalLight id="MaterialLight" direction='-1 -1 -1' on ="TRUE" intensity='0'>
+					</directionalLight>
+					<Viewpoint id="vp" description="Camera Main" centerOfRotation='0,2,-300'>
+					</Viewpoint>
+					<Transform bboxCenter='0,0,0' bboxSize='-1,-1,-1' center='0,0,0' children='X3DChildNode' metadata='X3DMetadataObject' render='true' rotation='0,0,1,0' scale='20,20,20' scaleOrientation='0,0,1,0' translation='0,2,-300' >
+					<Group id="mainModel">
+<!-- Transform Tag - used to scale the 3D Model to size so Annotations appear in scale proportional to 3D Model-->
+						<shape>
+            				<appearance>
+<!-- Material - gets image from URL img= -->
+            					<Material id="MaterialColor" diffuseColor='1.0 0.5 0'></Material>
+            					<script type="text/javascript">
+								var getimg = getUrlVars()["img"];
+								document.write(('<ImageTexture url="'+getimg)+('"></ImageTexture>'));
+								</script>
+            				</appearance>
+<!-- Box - gets image widh and height metadata from URL w= and h= -->
+            					<script type="text/javascript">
+								var getw = getUrlVars()["w"];
+									geth = getUrlVars()["h"];
+								document.write(('<box size="'+getw)+(',')+(geth)+(',0.1"></box>'));
+								</script>
+        				</shape>
+					</Group>			
+					<Group id="annotationMarker" render="true">
+					</Group>
+					</Transform>
+				</Scene>
+			</X3D>
+		</div><!-- /content -->
+	</div>
+</div><!-- /page -->
+
+<div class="popUp ui-overlay-shadow ui-body-a ui-corner-all">
+	<h3>Annotation</h3>
+	<p>	1. save your annotation as a 'Screenshot'</br>
+		2. upload your 'Screenshot' to comment section as file attachment</br>
+		3. write your annotation in the comment section</br>
+	
+		<a target="_blank" href="http://www.rockartdatabase.com/v2/wiki">Help</a>
+	</p>
+</div>
+
+
+<!-- Tools Section -->
+<div style="position:absolute; float:right; top:0px; right:0px; width:120px; background-color: #e0e0e0; border: solid 1px black; width:170px; max-height:100vh; overflow:scroll; padding:0px; color:#282828; opacity: 0.9; z-index: 9999; box-shadow: -2px 2px 10px rgb(0, 0, 0);">
+	<label style="text-align:right; background-color:#e0e0e0; border: solid 1px #282828; padding: 2px;" class="collapse" for="_1">Toolbox &#9660</label>
+  	<input id="_1" type="checkbox">
+  		<div style="padding: 0px 0px 20px 0px;">
+
+<!-- Image Info -->
+			<div style="background-color: #e0e0e0; padding: 7px 2px 7px 2px;">
+				<script type="text/javascript">
+				var getw = getUrlVars()["w"];
+					geth = getUrlVars()["h"];
+					document.write(('<small>Info: ' +getw*100)+('px x ')+(geth*100)+('px</small>'));
+				</script>
+			</div>
+			
+<!-- Color Picker -->	
+			<div style="background-color: #eeeeee; padding: 7px 2px 7px 2px;">
+				<strong>Color Picker</strong></br></br>
+				<input id="background-color" type="color">
+			</div>
+	
+<!-- Munsell Color Wheel -->
+			<div style="background-color: #e0e0e0; padding: 7px 2px 7px 2px;">
+				<strong>Munsell Color Wheel</strong></br></br>
+				<div style="width:21px; height:148px; float:right; margin-right:95px; overflow:hidden;">
+					<img src="MunsellColorWheel.png" style="width:21px; height: 184px;">
+				</div>
+				<div style="width:50px; height:148px; overflow:scroll;">
+					<img src="MunsellColorList.jpg" style="width:50px;">
+				</div>
+				</br>
+				<div>
+					<a target="_blank" href="http://www.perbang.dk/rgb">RGB to Munsell</a></br>
+					<small>(indicative conversion kit)</small>
+				</div>
+			</div>
+			
+<!-- Script fuer id=MaterialColor calls Attribute emissiveColor=0,0,0 -->
+			<script>
+ 				function Green()
+  				{
+    			var h = document.getElementById("MaterialColor");
+      			if(h.getAttribute('emissiveColor')=='0,0,0')
+				// ich versuche die 3 emissiveColor values R G B mit einem <input type="range" min="-2" max="1" step="0.1"> zu kontrollieren, habe aber bis jetzt nur die checkbox zum laufen gebracht mit fixed value.
+        		h.setAttribute('emissiveColor', '0,0,0');
+      			else
+          		h.setAttribute('emissiveColor', '0,0,0');
+    			var l = document.getElementById("MaterialLight");
+      			if(l.getAttribute('intensity')=='0')
+				// ich versuche die 3 emissiveColor values R G B mit einem <input type="range" min="-2" max="1" step="0.1"> zu kontrollieren, habe aber bis jetzt nur die checkbox zum laufen gebracht mit fixed value.
+        		l.setAttribute('intensity', '0');
+      			else
+          		l.setAttribute('intensity', '0');
+  				}
+
+			</script>
+		
+<!-- Form Start for Color Values - Reset Btn resets all values in this form range slider and clears all values in emissiveColor -->
+			<form>
+
+<!-- emissiveColor sliders -->
+				<div style="background-color:#eeeeee; padding: 7px 2px 7px 2px;">
+					<strong>Adjust Color</strong></br></br>
+<!-- Input type=range id=redrange -->
+					<div>
+					Red <span id="redrange_v">0</span></br>
+						<input id="redrange" type="range" min="-1" max="1" value="0" step="0.01" oninput="" onchange="showValue(this.id,this.value)" />
+		
+						<script type="text/javascript">
+							function showValue(item_id,newValue)
+							{
+							document.getElementById(item_id+"_v").innerHTML=newValue;
+							document.getElementById("MaterialColor").setAttribute('emissiveColor', document.getElementById("redrange").value+","+document.getElementById("greenrange").value+","+document.getElementById("bluerange").value);
+							//console.log(document.getElementById("redrange").value+","+document.getElementById("greenrange").value+","+document.getElementById("bluerange").value);
+							//console.log(item_id+" value: "+newValue);
+							}
+						</script>
+					</div>
+
+<!-- Input type=range id=greenrange -->
+					<div>
+						Green <span id="greenrange_v">0</span></br> 
+						<input id="greenrange" type="range" min="-1" max="1" value="0" step="0.01" onchange="showValue(this.id,this.value)" />		
+					</div>
+
+<!-- Input type=range id=bluerange -->
+					<div>
+						Blue <span id="bluerange_v">0</span></br>
+						<input id="bluerange" type="range" min="-1" max="1" value="0" step="0.01" onchange="showValue(this.id,this.value)" />		
+					</div>
+				
+<!-- Input type=range id=intensityrange - directionalLight intensity= -->
+					<div>
+					Intensity <span id="intensityrange_v">0</span></br>
+						<input id="intensityrange" type="range" min="-2" max="2" value="0" step="0.01" oninput="" onchange="showValue2(this.id,this.value)" />
+		
+						<script type="text/javascript">
+							function showValue2(item_id,newValue)
+							{
+							document.getElementById(item_id+"_v").innerHTML=newValue;
+							document.getElementById("MaterialLight").setAttribute('intensity', document.getElementById("intensityrange").value);
+							//console.log(document.getElementById("intensityrange").value;
+							//console.log(item_id+" value: "+newValue);
+							}
+						</script>
+					</div>
+<!-- RGB Color Reset -->
+					<div>
+						<input type="reset" value="Reset All" onclick="Green()">
+					</div>
+				</div>
+			</form>
+<!-- Form End -->
+	
+<!-- Ruler Control Section -->
+			<div style="background-color:#e0e0e0; padding: 7px 2px 7px 2px;">
+				<strong>Ruler Settings</strong></br></br>
+  				<label><input id="drawMetricCheckbox" checked="checked" onchange="options.drawMetric = this.checked ? (options.drawInches == 1 ? 2 : 1) : 0; clearRuler(); drawRuler()" type="checkbox">cm</label>
+  				<label><input id="drawInchesCheckbox" checked="checked" onchange="options.drawInches = this.checked ? (options.drawMetric == 1 ? 2 : 1) : 0; clearRuler(); drawRuler()" type="checkbox">in</label>
+  				<script>
+    				document.getElementById('drawMetricCheckbox').checked = options.drawMetric != 0;
+    				document.getElementById('drawInchesCheckbox').checked = options.drawInches != 0;
+  				</script>
+  			</div>
+  			<div>
+				<a href="#" id="pleaseCalibrateLink" onclick="this.style.fontSize='1em'; var a = this; (function(s) {if (s.display=='none') {s.display='block'; a.innerHTML = 'Change';} else {s.display='none'; dpiCalibrated = true; a.innerHTML = 'Calibrate.';}})(document.getElementById('calibration').style); setTotem(null); return false;" style="font-size: 1em; font-weight:lighter;">Calibrate</a></br>
+				<div id="calibration" style="display: none;">
+					<script>
+						if (dpiCalibrated) {
+  						var a = document.getElementById('pleaseCalibrateLink');
+  						a.onclick();
+  						a.onclick();
+						}
+					</script>
+					</br>
+					1. Set Marker</br>
+      					<input style="width:80px;" size="4" min="0" step="0.1" id="customTotemLength" type="number" placeholder="match length">
+      					<select id="customTotemUnits">
+        					<option value="cm" selected="selected">cm</option><option value="in">in</option>
+      					</select></br></br>
+					2. Drag ruler to desired length
+      					<script>
+        					var customTotemLength = document.getElementById('customTotemLength');
+        					var customTotemUnits = document.getElementById('customTotemUnits');
+        					var onCustomTotemChange = function() {
+          					customTotemLength.step = customTotemUnits.value == 'cm' ? 0.1 : 0.0625;
+          					if (!customTotemLength.value) return null;
+          					var x = parseFloat(customTotemLength.value);
+          					if (!x || x <= 0) return;
+          					var unit = customTotemUnits.value == 'cm' ? 1/2.54 : 1;
+          					setTotem({w: x*unit, name: 'custom totem'});
+        					};
+        					customTotemLength.addEventListener('input', onCustomTotemChange, false);
+        					customTotemUnits.addEventListener('input', onCustomTotemChange, false);
+        					customTotemLength.addEventListener('change', onCustomTotemChange, false);
+        					customTotemUnits.addEventListener('change', onCustomTotemChange, false);
+      					</script>
+				</div>
+			</div>
+		</div>
+		<label style="text-align:right; background-color:#e0e0e0; border: solid 1px #282828; padding: 2px;" class="collapse" for="_2">Rock Art Style Guide &#9660</label>
+  		<input id="_2" type="checkbox">
+  		<div style="background-color:#eeeeee; padding: 7px 2px 20px 2px;">
+  			<iframe style="width:100%; height:100vh;" src="http://learnline.cdu.edu.au/tourism/kakadu/values/pdf/stylesofrockart.pdf"></iframe>
+  		</div>
+</div>
+
+</body>
+</html>
+
+
+
+
+</head><body><!--Firefox requires the body tag or else document.getElementById will fail-->
+<canvas id="canvas" width="1680" height="100"></canvas>
+<!--
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.js"></script>
+-->
+<script>
+var cssDpi = function() {
+  var d = document.createElement('div');
+  d.style.width = '10in';
+  d.style.height = '10px';
+  document.body.appendChild(d);
+  var dpi = d.offsetWidth / 10;
+  document.body.removeChild(d);
+  return dpi;
+};
+
+var clampDpi = function(dpi) {
+  if (dpi < 5) dpi = 5;
+  if (dpi > 1000) dpi = 1000;
+  return dpi;
+};
+var canvas = document.getElementById('canvas');
+if (!canvas.getContext) {
+  canvas.style.display = 'none';
+  document.write(
+    '<h1>Sorry, you\u2019re using an obsolete browser. ' +
+    'Come back with Chrome, Firefox, Opera,' +
+    '<a href="http://www.google.com/chromeframe">Chrome Frame</a>, etc.</h1>');
+}
+var c = canvas.getContext('2d');
+var clearRuler = function() {
+  var rulerLength = Math.sqrt(canvas.width*canvas.width + canvas.height*canvas.height);
+  if (options.flipped) {
+    c.clearRect(10, -65, -rulerLength - 20, 130);
+  } else {
+    c.clearRect(-2, -65, rulerLength + 20, 130);
+  }
+  if (!totemMarker || !totemMarker.h) return;
+  var edgeX = totemMarker.w * options.dpi + 8;
+  if (options.flipped) {
+    c.clearRect(4, -4, -edgeX, totemMarker.h * options.dpi + 8);
+  } else {
+    c.clearRect(-4, -4, edgeX, totemMarker.h * options.dpi + 8);
+  }
+};
+/** @type {{w: number, h: (number|undefined)}} */
+var totemMarker = null;
+
+/**
+ * Draws the ticks and numbers. The tick lengths are given in an array.
+ *
+ * Caller is responsible for calling stroke(); beginPath() after this function.
+ *
+ * @param {!CanvasRenderingContext2D} c
+ * @param {!Array.<number>} array of heights of ticks (px)
+ * @param {number} tickDistance horizontal distance between each tick (px)
+ * @param {number} rulerLength horizontal length of ruler (px)
+ * @param {boolean} isAboveLine true if we should draw above the line.
+ */
+function drawRulerHelper(c, ticks, tickDistance, rulerLength, isAboveLine) {
+  var i = 0;
+  c.textBaseline = isAboveLine ? 'bottom' : 'top';
+  var numTicks = rulerLength / tickDistance;
+  var y0 = ticks[0];
+  if (! isAboveLine) y0 = -y0;
+
+  // Workaround for http://crbug.com/87097 : draw the leftmost vertical line
+  // twice, by itself, so that it doesn't get cut off in Chrome.
+  c.stroke();
+  c.beginPath();
+  c.moveTo(0,0);
+  c.lineTo(0,y0);
+  c.stroke();
+  c.beginPath();
+
+  for (var i = 0; i < numTicks; ++i) {
+    var x = i * tickDistance;
+    if (options.flipped) x = -x;
+    var y = ticks[i%ticks.length];
+    if (! isAboveLine) y = -y;
+    c.moveTo(x,0);
+    c.lineTo(x,y);
+    if (i % ticks.length == 0) {
+      c.fillText(i/ticks.length, x + 3, y);
+    }
+  }
+}
+var drawRuler = function() {
+  var dpi = options.dpi;
+  c.strokeStyle = 'black';
+  c.beginPath();
+  c.moveTo(0, 0);
+  var rulerLength = Math.sqrt(canvas.width*canvas.width + canvas.height*canvas.height);
+  if (options.flipped) c.lineTo(-rulerLength, 0);
+  else c.lineTo(rulerLength, 0);
+  if (options.drawInches) {
+    // 1 tick = 1/16 in = dpi/16 px.
+    var tickDistance = dpi/16
+      , isAboveLine = options.drawInches === 1
+      , ticks = [];
+    for (var i = 0; i < 16; i++) {
+      var y = i % 16 == 0 ? 50 : i % 8 === 0 ? 30 : i % 4 === 0 ? 20 : i % 2 === 0 ? 15 : 10;
+      ticks.push(y);
+    }
+    drawRulerHelper(c, ticks, tickDistance, rulerLength, isAboveLine);
+  }
+  if (options.drawMetric) {
+    // 1 tick = 1 mm = 1/25.4 in = dpi/25.4px
+    var tickDistance = dpi/25.4
+      , isAboveLine = options.drawMetric === 1
+      , ticks = [30, 10, 10, 10, 10, 20, 10, 10, 10, 10];
+    drawRulerHelper(c, ticks, tickDistance, rulerLength, isAboveLine);
+  }
+  c.stroke();
+  c.beginPath();
+  if (totemMarker) {
+    c.strokeStyle = 'yellow';
+    var marker = totemMarker;
+    var edgeX = marker.w * dpi;
+    if (options.flipped) edgeX = -edgeX;
+    c.moveTo(edgeX, -60);
+    c.lineTo(edgeX, 60);
+    if (marker.h) {
+      // Workaround for http://crbug.com/87097 : draw the leftmost vertical line
+      // twice, by itself, so that it doesn't get cut off in Chrome.
+      c.stroke();
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.lineTo(0, marker.h*dpi);
+      c.stroke();
+      c.beginPath();
+
+      c.moveTo(0, 0);
+      c.lineTo(edgeX, 0);
+      c.lineTo(edgeX, marker.h*dpi);
+      c.lineTo(0, marker.h*dpi);
+      c.lineTo(0, 0);
+    }
+    c.stroke();
+    c.beginPath();
+  }
+};
+var dpiCalibrated = false;
+var currentTransform = {x: 20, y: 50, angle: 0};
+var options = {dpi: 96, drawMetric: 2, drawInches: 1, flipped: false};
+var screenInfo = {
+    screenWidthPx: screen.width, screenHeightPx: screen.height};
+window.onresize = function() {
+  // TODO: set resolution-dependent width
+  canvas.width = canvas.offsetWidth; //document.documentElement.clientWidth;
+  canvas.height = canvas.offsetHeight; // document.documentElement.clientHeight;
+  c.translate(currentTransform.x, currentTransform.y);
+  c.rotate(currentTransform.angle);
+  drawRuler();
+};
+// TODO: save this before so we don't have to do it on unload
+onunload = function() {
+  // store cookie for 30 days
+  var c = 'ruleroptions='
+  if (dpiCalibrated) c += 'dpi=' + options.dpi + '&';
+  c += 'm=' + options.drawMetric + '&i=' + options.drawInches + '; Max-Age=2592000;';
+  document.cookie = c;
+};
+var parseCookie = function() {
+  var cookies = document.cookie.split(';');
+  for (var i = 0; i < cookies.length; ++i) {
+    var idx = cookies[i].indexOf('=');
+    var name = cookies[i].substr(0, idx).replace(/^\s+|\s+$/g, '');
+    if (name != 'ruleroptions') continue;
+    var value = cookies[i].substr(idx+1).replace(/^\s+|\s+$/g, '');
+    var cookieParts = value.split('&');
+    for (var j = 0; j < cookieParts.length; ++j) {
+      var eq = cookieParts[j].indexOf('=');
+      var k = cookieParts[j].substr(0, eq);
+      var v = cookieParts[j].substr(eq+1);
+      if (k == 'dpi') {
+        options.dpi = clampDpi(parseFloat(v) || 96);
+        dpiCalibrated = true;
+      } else if (k == 'm') {
+        options.drawMetric = '1' == v ? 1 : v == '0' ? 0 : 2;
+      } else if (k == 'i') {
+        options.drawInches = '1' == v ? 1 : v == '0' ? 0 : 2;
+      }
+    }
+  }
+  if (options.drawInches == 1 && options.drawMetric == 1) {
+    options.drawMetric = 2;
+  } else if (options.drawInches == 2 && options.drawMetric == 2) {
+    options.drawMetric = 1;
+  }
+};
+parseCookie();
+var MouseDownModes = {
+  MOVING: 0,
+  CALIBRATING: 1,
+  ROTATING: 2
+};
+canvas.addEventListener('mousedown', function(e) {
+  // clientX is position relative to viewport in CSS pixels.
+  var dragStartX = e.clientX, dragStartY = e.clientY;
+  var lastClientX = dragStartX, lastClientY = dragStartY;
+  var lastMouseAngle = Math.atan2(e.clientY - currentTransform.y,
+                                  e.clientX - currentTransform.x);
+  var mode = MouseDownModes.MOVING;
+  var resizeToTotem = function(e) {
+    // project the click point onto the ruler vector, which is
+    var a = e.clientX - currentTransform.x;
+    var b = e.clientY - currentTransform.y;
+    var r = Math.sqrt(a*a + b*b);
+    var theta = Math.atan2(b, a);
+    var projection = r * Math.cos(theta - currentTransform.angle);
+    if (options.flipped) {
+      projection = -projection;
+    }
+    var newDpi = projection / totemMarker.w;
+    newDpi = clampDpi(newDpi);
+    options.dpi = newDpi;
+  };
+  if (totemMarker) {
+    mode = MouseDownModes.CALIBRATING;
+  }
+  if (e.shiftKey) mode = MouseDownModes.MOVING;  // even while calibrating, you can move
+  else if (e.ctrlKey) mode = MouseDownModes.ROTATING;
+  if (mode === MouseDownModes.CALIBRATING) {
+    clearRuler();
+    resizeToTotem(e);
+    drawRuler();
+  }
+  var onmousemove = function(e) {
+    e.preventDefault();  // prevent text selection
+    e.stopPropagation();
+    // canvas.width = canvas.width;  // clear the canvas and also the transform
+    clearRuler();
+    if (mode === MouseDownModes.MOVING) {
+      var dx = e.clientX - lastClientX;
+      var dy = e.clientY - lastClientY;
+      c.rotate(-currentTransform.angle)
+      c.translate(dx, dy);
+      c.rotate(currentTransform.angle)
+      currentTransform.x += dx;
+      currentTransform.y += dy;
+    } else if (mode === MouseDownModes.CALIBRATING) {
+      resizeToTotem(e);
+    } else if (mode === MouseDownModes.ROTATING) {
+      var currentMouseAngle = Math.atan2(e.clientY - currentTransform.y,
+                                         e.clientX - currentTransform.x);
+      var angleChange = currentMouseAngle - lastMouseAngle;
+      currentTransform.angle += angleChange;
+      c.rotate(angleChange);
+      lastMouseAngle = currentMouseAngle;
+    }
+    drawRuler();
+    lastClientX = e.clientX;
+    lastClientY = e.clientY;
+  };
+  var onmouseup = function(e) {
+    document.removeEventListener('mousemove', onmousemove, true);
+    document.removeEventListener('mouseup', onmouseup, false);
+    window.onblur = null;
+  };
+  document.addEventListener('mousemove', onmousemove, true);
+  document.addEventListener('mouseup', onmouseup, false);
+  window.onblur = onmouseup;
+}, false);
+var setTotem = function(o) {
+  clearRuler();
+  totemMarker = o;
+  drawRuler();
+};
+window.onresize();
+
+</script>
+</div>
+
+</body>
+</html>
