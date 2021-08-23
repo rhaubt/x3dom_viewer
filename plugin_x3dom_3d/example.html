@@ -1,0 +1,32 @@
+<html>
+<head>
+    <head> 
+	<title>Meta Data Viewer</title> 
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+	<link rel="stylesheet" href="libs/jquery.mobile-1.1.1.min.css" />
+	<script src="libs/jquery-1.7.1.min.js"></script>
+	<script src="libs/jquery.mobile-1.1.1.min.js"></script>
+	
+	<link rel="stylesheet" href="style.css" />
+	<script src="main.js"></script>
+
+<script type='text/javascript' src='https://www.x3dom.org/download/x3dom.js'> </script>
+
+</head>
+<body>
+<h1>Using the Inline Node</h1>
+<p>
+    This example includes an external x3d scene. You can even manipulate its content during runtime.
+</p>
+<x3d width='500px' height='400px'>
+    <scene>
+    <directionalLight id="MaterialLight" color="0 1 0" direction='1 1 1' on ="TRUE" intensity='2.0' shadowIntensity='0.0'> </directionalLight> 
+            <Inline url="http://www.rockartdatabase.com/radb/wp-content/themes/rockartdatabase_main/wp-content/3dmodel/8/Deer.x3d" />
+    </scene>
+</x3d>
+</body>
+</html>
