@@ -1,0 +1,211 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>Meta Data Viewer</title> 
+    <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="stylesheet" type="text/css" href="libs/x3dom.css" />
+    <script type="text/javascript" src="libs/x3dom.js"></script>
+    
+	<link rel="stylesheet" href="libs/jquery.mobile-1.1.1.min.css" />
+	<script src="libs/jquery-1.7.1.min.js"></script>
+	<script src="libs/jquery.mobile-1.1.1.min.js"></script>
+	
+	<link rel="stylesheet" href="style.css" />
+	<script src="main.js"></script>
+
+<!-- Javascript to fetch title= desc= x3d= from URL --> 	
+	<script>
+	// fetch data value from URL
+		function getUrlVars() {
+    		var vars = {};
+    		var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        		vars[key] = value;
+    		});
+    	return vars;
+		}
+	</script>
+
+<!-- Take Screenshot-->
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function(){
+		var screenshotCount = 0;
+
+		//Every time the user clicks on the 'take screenhot' button
+		$("#btnTakeScreenshot").on("click", function() {
+			//Get data url from the runtime
+			var imgUrl = document.getElementById("x3dElement").runtime.getScreenshot();
+
+			//Create preview image...
+			var newScreenshotImage = document.createElement('img');
+			newScreenshotImage.src = imgUrl;
+			newScreenshotImage.id = "screenshot_" + screenshotCount;
+			$('#screenshotPreviews').append(newScreenshotImage);
+
+			//...and download link
+			var newScreenshotDownloadLink = document.createElement('a');
+			newScreenshotDownloadLink.href = imgUrl;
+			newScreenshotDownloadLink.download = "screenshot_" + screenshotCount + ".png";
+			newScreenshotDownloadLink.innerHTML = "save as ...";
+			$('#screenshotPreviews').append(newScreenshotDownloadLink);
+
+			screenshotCount++;
+			$('#screenshotCount').html(screenshotCount);
+		});
+	});
+</script>
+
+ <style type="text/css">
+/* Screenshot Box */
+    #demo_table {
+		border:0;
+	}
+ 	#demo_table img {
+		width:100px;
+		height:100px;
+	}
+	#demo_table td img
+	{
+		border:1px solid grey;
+		text-decoration:none;
+	}
+
+	 #screenshotPreviews > img {
+		 height:50px;
+		 width:80px;
+		 margin-left:2px;
+	 }
+/* Left Pane */
+	#leftpane {
+		background-color: #282828;
+		width: 105px;
+		padding-left: 5px;
+		float:left;
+	}
+	.ui-btn-inner {
+		font-size: 10px;
+		padding: 7px 7px 7px 7px;
+		white-space: normal;
+	}
+/* Right Pane */
+	#rightpane {
+		padding: 0px 0px 0px 0px;
+		height: 100vh;
+	}
+/* Annotation Btn*/
+	.ui-btn-up-c {
+    	border: none;
+    	width: 70px;
+    }
+    .ui-btn-hover-c {
+    	border: none;
+    	width: 70px;
+    }
+/* body text links*/
+    .ui-body-c .ui-link {
+    color: #2489CE;
+    font-weight: lighter;
+}
+/* Top Name Bar */
+	.ui-bar-a {
+    border: none;
+    background: none;
+    }
+/* x3d Viewport */
+#x3dViewport {
+    margin-top: 0px;
+    }
+body.ui-mobile-viewport, div.ui-mobile-viewport {
+    overflow-x: hidden;
+    overflow-y: hidden;
+	}
+#mainpage {
+    color: #FFF !important;
+    text-shadow: none !important;
+}
+ </style>
+
+</head> 
+<body> 
+<div id="mainpage" data-role="page">
+<!-- 2D View-->
+		<div style="position: absolute; right: 2px; top: 2px; z-index:99999;">
+			<script type="text/javascript">
+				var getimg = getUrlVars()["img"];
+				document.write(('<a target="_blank" href="'+getimg)+('">2D view</a>'));
+			</script>
+		</div>
+<!-- Full Screen-->
+		<div style="position: absolute; right: 2px; bottom: 5px; z-index:99999;">
+			<script type="text/javascript">
+				var getimg = getUrlVars()["img"];
+				document.write(('<a target="_blank" href="http://www.rockartdatabase.com/v2/wp-content/themes/v2/plugin_x3dom_images/index.html?img='+getimg)+('">full screen</a>'));
+			</script>
+		</div>
+<!-- Annotation Btn-->
+		<div style="width:100px;min-height:100px;padding:2px; position: absolute; left: 0px; top: 0px; z-index:99999;">
+			<a href="#" title="Click on 3D model to create new annotation" id="btnCreatAnno" 
+		   	data-role="button" data-inline="true">Create Annotation
+			</a>
+		</div>
+
+<!-- Screenshot Btn-->
+		<div style=" position: absolute; bottom: 0px; left: 5px; z-index:99999;">
+			<a href="#" id="btnTakeScreenshot"><button type="button">Screenshot</button></a>
+		</div>
+<!-- Screenshot Count-->
+		<div style=" position: absolute; bottom: 5px; left: 80px; z-index:99999;">
+			<span style="color: #e0e0e0;" id="screenshotCount">0</span>
+		</div>
+<!-- Screenshot Preview-->
+		<div style="position: absolute; left: 5px; max-height: 70px; overflow-y: scroll; bottom: 35px; z-index:99999; background-color: #e0e0e0; margin: 2px; opacity: 0.8; border: 1px solid #282828;" id="screenshotPreviews">
+		</div>
+<!-- Navigation Info-->
+		<div style="padding:2px; position: absolute; left: 100px; bottom: 3px; z-index:99999;">
+			Navigation: <small> a = centre | u = show all | r = reset | double click = focus
+			</small>
+		</div>
+
+	
+	<div id="rightpane">
+		<div id="x3dViewport" data-role="content">	
+			<X3D id='x3dElement' showStat='false' showLog='false'>
+				<Scene id='scene'>
+					<Viewpoint id="vp" description="Camera Main">
+					</Viewpoint>
+					<Transform bboxCenter='0,0,0' bboxSize='-1,-1,-1' center='0,0,0' children='X3DChildNode' metadata='X3DMetadataObject' render='true' rotation='0,0,1,0' scale='30,30,30' scaleOrientation='0,0,1,0' translation='0,2,-120' >
+					<Group id="mainModel">
+<!-- Transform Tag - used to scale the 3D Model to size so Annotations appear in scale proportional to 3D Model-->
+						<shape>
+            				<appearance>
+            					<script type="text/javascript">
+								var getimg = getUrlVars()["img"];
+								document.write(('<ImageTexture URL="'+getimg)+('"></ImageTexture>'));
+								</script>
+            				</appearance>
+            				<box size='4,3,0.1'></box>		
+        				</shape>		
+					</Group>			
+					<Group id="annotationMarker" render="true">
+					</Group>
+					</Transform>
+				</Scene>
+			</X3D>
+		</div><!-- /content -->
+	</div>
+</div><!-- /page -->
+
+<div class="popUp ui-overlay-shadow ui-body-a ui-corner-all">
+	<h3>Annotation</h3>
+	<p>	1. save your annotation as a 'Screenshot'</br>
+		2. upload your 'Screenshot' to comment section as file attachment</br>
+		3. write your annotation in the comment section</br>
+	
+		<a target="_blank" href="http://www.rockartdatabase.com/v2/wiki">Help</a>
+	</p>
+</div>
+
+</body>
+</html>
